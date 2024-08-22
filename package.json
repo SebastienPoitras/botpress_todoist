@@ -10,7 +10,9 @@
   "private": true,
   "dependencies": {
     "@botpress/client": "0.29.0",
-    "@botpress/sdk": "0.10.9"
+    "@botpress/sdk": "0.10.9",
+    "@doist/todoist-api-typescript": "^3.0.3",
+    "axios": "^1.7.4"
   },
   "devDependencies": {
     "@botpress/cli": "^0.8.57",
