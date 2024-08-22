@@ -1,4 +1,4 @@
-import { z, IntegrationDefinition } from '@botpress/sdk'
+import { z, IntegrationDefinition, messages } from '@botpress/sdk'
 import { integrationName } from './package.json'
 
 export default new IntegrationDefinition({
@@ -6,20 +6,33 @@ export default new IntegrationDefinition({
   version: '0.0.1',
   readme: 'hub.md',
   icon: 'icon.svg',
-  actions: {
-    helloWorld: {
-      title: 'Hello World',
-      description: 'A simple hello world action',
-      input: {
-        schema: z.object({
-          name: z.string().optional(),
-        }),
+  channels: {
+    comments: {
+      messages: {
+        text: messages.defaults.text
       },
-      output: {
-        schema: z.object({
-          message: z.string(),
-        }),
+      conversation: {
+        tags: {
+          id: {
+            title: 'Task ID',
+            description: 'The ID of the task',
+          }
+        }
       },
-    },
+      message: {
+        tags: {
+          id: {
+            title: 'Comment ID',
+            description: 'The ID of the comment',
+          }
+        }
+      }  
+    }
   },
+  configuration: {
+    schema: z.object({
+      apiToken: z.string(), // TODO: Make this a secret
+      taskName: z.string() // TODO: Should correspond to a unique conversation instead of a parameter
+    })
+  }
 })
