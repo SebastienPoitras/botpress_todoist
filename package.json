@@ -12,7 +12,8 @@
     "@botpress/client": "0.29.0",
     "@botpress/sdk": "0.10.9",
     "@doist/todoist-api-typescript": "^3.0.3",
-    "axios": "^1.7.4"
+    "axios": "^1.7.4",
+    "verror": "^1.10.1"
   },
   "devDependencies": {
     "@botpress/cli": "^0.8.57",
