@@ -37,6 +37,36 @@ export default new IntegrationDefinition({
       }
     }
   },
+  actions: {  
+    createComment: {
+      title: 'Create Comment',
+      description: 'Create a comment in Todoist',
+      input: {
+        schema: z.object({
+          taskId: z.string(),
+          content: z.string(),
+        }),
+      },
+      output: { 
+        schema: z.object({
+          commentId: z.string(), 
+        }),
+      }
+    }
+  },
+  events: {
+    taskAdded: { 
+      title: 'Task Added',
+      description: 'A task has been added to Todoist',
+      schema: z.object({
+        id: z.string(),
+        user_id: z.string(),
+        content: z.string(),
+        description: z.string(),
+        priority: z.number(),
+      }),
+    },
+  },
   configuration: {
     schema: z.object({
       apiToken: z.string(), // TODO: Make this a secret
