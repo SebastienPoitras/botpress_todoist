@@ -14,7 +14,7 @@ export default new IntegrationDefinition({
       conversation: {
         tags: {
           id: {
-            title: 'Task ID',
+            title: 'Task ID', 
             description: 'The ID of the task',
           }
         }
@@ -29,10 +29,17 @@ export default new IntegrationDefinition({
       }  
     }
   },
+  user: {
+    tags: {
+      id: {
+        title: 'User ID',
+        description: 'The ID of a user',
+      }
+    }
+  },
   configuration: {
     schema: z.object({
       apiToken: z.string(), // TODO: Make this a secret
-      taskName: z.string() // TODO: Should correspond to a unique conversation instead of a parameter
     })
   }
 })

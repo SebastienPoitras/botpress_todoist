@@ -19,6 +19,12 @@ export class Client {
     return task.id;
   }
 
+  async getTaskName(task_id: string): Promise<string> {
+    const api = new TodoistApi(this.apiToken);
+    const task = await api.getTask(task_id);
+    return task.content;
+  }
+
   async createComment(task_id: string, content: string): Promise<Comment> {
     const api = new TodoistApi(this.apiToken);
     const comment = await api.addComment({
