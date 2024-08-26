@@ -1,13 +1,20 @@
 import * as bp from '.botpress'
-import { isSupportedEvent, Event, NoteEvent, ItemEvent, isSupportedNoteEvent, isSupportedItemEvent } from './types';
+import { isSupportedEvent, Event, NoteEvent, ItemEvent, isSupportedNoteEvent, isSupportedItemEvent, isItemUpdateEvent } from './types';
 import { VError } from 'verror';
+import { RuntimeError } from '@botpress/client';
+import { Priority } from './client';
+
+const ResponseOk = {
+    status: 200,
+    body: 'OK',
+};
 
 function parseEventJson(data: string, logger: bp.Logger): Event {
     try {
         const parsedEvent = JSON.parse(data);
         if (!isSupportedEvent(parsedEvent)) {
             logger.forBot().warn("Handler received request from Todoist with invalid event: ", parsedEvent);
-            throw new Error('Invalid event_name');
+            throw new Error('Invalid event');
         }
         return parsedEvent;
     }
@@ -42,10 +49,7 @@ async function handleNoteEvent(event: NoteEvent, props: bp.HandlerProps) {
         }
     })
 
-    return {
-        status: 200,
-        body: 'OK',
-    };
+    return ResponseOk;
 }
 
 async function onItemAdded(event: ItemEvent, props: bp.HandlerProps) {
@@ -70,10 +74,48 @@ async function onItemAdded(event: ItemEvent, props: bp.HandlerProps) {
         }
     })
 
-    return {
-        status: 200,
-        body: 'OK',
-    };
+    return ResponseOk;
+}
+
+async function onItemUpdated(event: ItemEvent, props: bp.HandlerProps) {
+    let { client, logger } = props;
+    if(!isItemUpdateEvent(event)) {
+        logger.forBot().warn("Received item:updated event with invalid data");
+        throw new Error('Invalid item:updated event');
+    }
+    logger.forBot().info("Received item:updated event");
+
+    const newPriority = event.event_data.priority;
+    const oldPriority = event.event_data_extra.old_item.priority;
+    if(newPriority !== oldPriority) {
+        await client.createEvent({
+            type: 'taskPriorityChanged',
+            payload: {
+                id: event.event_data.id,
+                newPriority: Priority.fromApi(newPriority).toDisplay(),
+                oldPriority: Priority.fromApi(oldPriority).toDisplay(),
+            }
+        })        
+    }
+
+    return ResponseOk;
+}
+
+async function onItemCompleted(event: ItemEvent, props: bp.HandlerProps) {
+    let { client, logger } = props;
+    logger.forBot().info("Received item:completed event");
+    await client.createEvent({
+        type: 'taskCompleted',
+        payload: {
+            id: event.event_data.id,
+            user_id: event.event_data.user_id,
+            content: event.event_data.content,
+            description: event.event_data.description,
+            priority: event.event_data.priority,
+        }
+    });
+
+    return ResponseOk;
 }
 
 async function handleItemEvent(event: ItemEvent, props: bp.HandlerProps) {
@@ -82,12 +124,18 @@ async function handleItemEvent(event: ItemEvent, props: bp.HandlerProps) {
         case 'item:added':
             response = onItemAdded(event, props);
             break;
+        case 'item:updated':
+            response = onItemUpdated(event, props);
+            break;
+        case 'item:completed':
+            response = onItemCompleted(event, props);
+            break;
         default:
             response = {
                 status: 400,
                 body: 'Unsupported event type',
             };
-            break;
+            break; 
     }
     return response
 }
