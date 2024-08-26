@@ -1,7 +1,6 @@
 import * as bp from '.botpress'
 import { isSupportedEvent, Event, NoteEvent, ItemEvent, isSupportedNoteEvent, isSupportedItemEvent, isItemUpdateEvent } from './types';
 import { VError } from 'verror';
-import { RuntimeError } from '@botpress/client';
 import { Priority } from './client';
 
 const ResponseOk = {
