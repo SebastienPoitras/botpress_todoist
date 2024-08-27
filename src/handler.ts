@@ -105,7 +105,7 @@ export const handler: bp.IntegrationProps['handler'] = async (props: bp.HandlerP
 
   const parseResult = eventSchema.safeParse(eventData)
   if (!parseResult.success) {
-    logger.forBot().warn('Handler received request from Todoist with unsuported payload: ', eventData)
+    logger.forBot().warn('Handler received request from Todoist with unsuported payload: ', eventData, 'Error: ', parseResult.error)
     return {
       status: 400,
       body: 'Invalid event',

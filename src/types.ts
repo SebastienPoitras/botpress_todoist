@@ -13,7 +13,7 @@ export const noteEventSchema = z.object({
   event_name: z.literal('note:added'),
   user_id: z.string(),
   event_data: noteEventDataSchema,
-  event_data_extra: z.null(),
+  event_data_extra: z.undefined(),
 })
 
 export type ItemEventData = z.infer<typeof itemEventDataSchema>
@@ -36,7 +36,7 @@ export const itemAddedEventSchema = z.object({
   event_name: z.literal('item:added'),
   user_id: z.string(),
   event_data: itemEventDataSchema,
-  event_data_extra: z.null(),
+  event_data_extra: z.undefined(),
 })
 
 export type ItemCompletedEvent = z.infer<typeof itemCompletedEventSchema>
@@ -44,7 +44,7 @@ export const itemCompletedEventSchema = z.object({
   event_name: z.literal('item:completed'),
   user_id: z.string(),
   event_data: itemEventDataSchema,
-  event_data_extra: z.null(),
+  event_data_extra: z.undefined(),
 })
 
 export type ItemUpdatedEvent = z.infer<typeof itemUpdatedEventSchema>
