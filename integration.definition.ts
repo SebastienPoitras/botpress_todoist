@@ -134,7 +134,7 @@ export default new IntegrationDefinition({
   },
   configuration: {
     schema: z.object({
-      apiToken: z.string(), // TODO: Make this a secret
+      apiToken: z.string(),
     }),
   },
 })
