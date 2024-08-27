@@ -11,7 +11,7 @@ const ItemDefinition = z.object({
 export default new IntegrationDefinition({
   name: 'sebastien_poitras/botpress-todoist',
   version: '0.0.1',
-  readme: 'hub.md',
+  readme: 'README.md',
   icon: 'icon.svg',
   channels: {
     comments: {
