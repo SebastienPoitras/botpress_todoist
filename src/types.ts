@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from '@botpress/sdk'
 
 export type NoteEventData = z.infer<typeof noteEventDataSchema>
 export const noteEventDataSchema = z.object({
