@@ -1,5 +1,4 @@
-import { z, IntegrationDefinition, messages, user } from '@botpress/sdk'
-import { integrationName } from './package.json'
+import { z, IntegrationDefinition, messages } from '@botpress/sdk'
 
 const ItemDefinition = z.object({
   id: z.string(),
@@ -10,42 +9,42 @@ const ItemDefinition = z.object({
 })
 
 export default new IntegrationDefinition({
-  name: integrationName,
+  name: 'sebastien_poitras/botpress-todoist',
   version: '0.0.1',
   readme: 'hub.md',
   icon: 'icon.svg',
   channels: {
     comments: {
       messages: {
-        text: messages.defaults.text
+        text: messages.defaults.text,
       },
       conversation: {
         tags: {
           id: {
-            title: 'Task ID', 
+            title: 'Task ID',
             description: 'The ID of the task',
-          }
-        }
+          },
+        },
       },
       message: {
         tags: {
           id: {
             title: 'Comment ID',
             description: 'The ID of the comment',
-          }
-        }
-      }  
-    }
+          },
+        },
+      },
+    },
   },
   user: {
     tags: {
       id: {
         title: 'User ID',
         description: 'The ID of a user',
-      }
-    }
+      },
+    },
   },
-  actions: {  
+  actions: {
     createComment: {
       title: 'Create Comment',
       description: 'Create a comment',
@@ -55,11 +54,11 @@ export default new IntegrationDefinition({
           content: z.string(),
         }),
       },
-      output: { 
+      output: {
         schema: z.object({
-          commentId: z.string(), 
+          commentId: z.string(),
         }),
-      }
+      },
     },
     createTask: {
       title: 'Create Task',
@@ -68,15 +67,15 @@ export default new IntegrationDefinition({
         schema: z.object({
           content: z.string(),
           description: z.string(),
-          priority: z.number(), 
+          priority: z.number(),
           parentTaskId: z.string().optional(),
         }),
       },
-      output: { 
+      output: {
         schema: z.object({
-          taskId: z.string(), 
+          taskId: z.string(),
         }),
-      }
+      },
     },
     changeTaskPriority: {
       title: 'Change Task Priority',
@@ -89,7 +88,7 @@ export default new IntegrationDefinition({
       },
       output: {
         schema: z.object({}),
-      }
+      },
     },
     getTaskId: {
       title: 'Get Task ID',
@@ -103,11 +102,11 @@ export default new IntegrationDefinition({
         schema: z.object({
           taskId: z.string().nullable(),
         }),
-      }
+      },
     },
   },
   events: {
-    taskAdded: { 
+    taskAdded: {
       title: 'Task Added',
       description: 'A task has been added',
       schema: z.object({
@@ -136,6 +135,6 @@ export default new IntegrationDefinition({
   configuration: {
     schema: z.object({
       apiToken: z.string(), // TODO: Make this a secret
-    })
-  }
+    }),
+  },
 })

@@ -1,67 +1,64 @@
-const supportedItemEventTypes = ['item:added', 'item:completed', 'item:updated'] as const;
-export type ItemEventType = typeof supportedItemEventTypes[number];
+import { z } from 'zod'
 
-const supportedNoteEventTypes = ['note:added'] as const;
-export type NoteEventType = typeof supportedNoteEventTypes[number];
+export type NoteEventData = z.infer<typeof noteEventDataSchema>
+export const noteEventDataSchema = z.object({
+  id: z.string(),
+  posted_uid: z.string(), // The ID of the user who posted the note
+  item_id: z.string(),
+  content: z.string(),
+})
 
-export type EventType = ItemEventType | NoteEventType; // Extend this type with other event types
+export type NoteEvent = z.infer<typeof noteEventSchema>
+export const noteEventSchema = z.object({
+  event_name: z.literal('note:added'),
+  user_id: z.string(),
+  event_data: noteEventDataSchema,
+  event_data_extra: z.null(),
+})
 
-// Event data types
-type ItemEventData = {
-    id: string,
-    user_id: string, // The owner of the task
-    content: string,
-    description: string,
-    priority: number,
-}
-type ItemUpdateEventDataExtra = {
-    old_item: ItemEventData,
-    update_intent: 'item_updated' | 'item_completed' | 'item_uncompleted'
-}
-type ItemEventDataExtra = null | ItemUpdateEventDataExtra;
+export type ItemEventData = z.infer<typeof itemEventDataSchema>
+export const itemEventDataSchema = z.object({
+  id: z.string(),
+  user_id: z.string(), // The owner of the task
+  content: z.string(),
+  description: z.string(),
+  priority: z.number(),
+})
 
-type NoteEventData = {
-    id: string,
-    posted_uid: string, // The ID of the user who posted the note
-    item_id: string,
-    content: string,
-}
+export type ItemUpdateEventDataExtra = z.infer<typeof itemUpdateEventDataExtraSchema>
+export const itemUpdateEventDataExtraSchema = z.object({
+  old_item: itemEventDataSchema,
+  update_intent: z.enum(['item_updated', 'item_completed', 'item_uncompleted']),
+})
 
-type EventData = ItemEventData | NoteEventData; // Extend this type with other event data types
-type EventDataExtra = null | ItemEventDataExtra; // Extend this type with other event data extra types
+export type ItemAddedEvent = z.infer<typeof itemAddedEventSchema>
+export const itemAddedEventSchema = z.object({
+  event_name: z.literal('item:added'),
+  user_id: z.string(),
+  event_data: itemEventDataSchema,
+  event_data_extra: z.null(),
+})
 
-type EventImpl<TEventType, TEventData, TEventDataExtra = null> = {
-    event_name: TEventType,
-    user_id: string,
-    event_data: TEventData,
-    event_data_extra: TEventDataExtra
-}
-export type Event = EventImpl<EventType, EventData, EventDataExtra>;
-export type NoteEvent = EventImpl<NoteEventType, NoteEventData>;
+export type ItemCompletedEvent = z.infer<typeof itemCompletedEventSchema>
+export const itemCompletedEventSchema = z.object({
+  event_name: z.literal('item:completed'),
+  user_id: z.string(),
+  event_data: itemEventDataSchema,
+  event_data_extra: z.null(),
+})
 
-export type ItemEvent = EventImpl<ItemEventType, ItemEventData, ItemEventDataExtra>;
-export type ItemUpdateEvent = ItemEvent & {
-        event_name: 'item:updated';
-        event_data_extra: ItemUpdateEventDataExtra;
-    };
+export type ItemUpdatedEvent = z.infer<typeof itemUpdatedEventSchema>
+export const itemUpdatedEventSchema = z.object({
+  event_name: z.literal('item:updated'),
+  user_id: z.string(),
+  event_data: itemEventDataSchema,
+  event_data_extra: itemUpdateEventDataExtraSchema,
+})
 
-// Type guards
-function isSupportedEventSubtypeImpl<TEventType>(eventTypeStr: any, supportedEventTypes: readonly TEventType[]): eventTypeStr is TEventType {
-    return supportedEventTypes.includes(eventTypeStr as TEventType);
-}
-
-export function isSupportedItemEvent(event: Event): event is ItemEvent {
-    return isSupportedEventSubtypeImpl<ItemEventType>(event.event_name, supportedItemEventTypes);
-}
-
-export function isItemUpdateEvent(event: ItemEvent): event is ItemUpdateEvent {
-    return event.event_name === 'item:updated';
-}
-
-export function isSupportedNoteEvent(event: Event): event is NoteEvent {
-    return isSupportedEventSubtypeImpl<NoteEventType>(event.event_name, supportedNoteEventTypes);
-}
-
-export function isSupportedEvent(event: Event): event is Event {
-    return isSupportedItemEvent(event) || isSupportedNoteEvent(event);
-}
+export type Event = z.infer<typeof eventSchema>
+export const eventSchema = z.union([
+  noteEventSchema,
+  itemAddedEventSchema,
+  itemCompletedEventSchema,
+  itemUpdatedEventSchema,
+])
