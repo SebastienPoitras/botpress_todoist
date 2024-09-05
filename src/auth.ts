@@ -4,6 +4,9 @@ import { Client } from './client'
 import queryString from 'query-string'
 import axios from 'axios'
 
+export const NO_ACCESS_TOKEN_ERROR =
+  'No access token found. Please authenticate with Todoist first or manually set an access token.'
+
 export async function handleOAuth(req: Request, client: bp.Client, ctx: IntegrationContext) {
   const { code } = queryString.parse(req.query)
   if (typeof code !== 'string') {
