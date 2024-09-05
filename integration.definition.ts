@@ -134,7 +134,31 @@ export default new IntegrationDefinition({
   },
   configuration: {
     schema: z.object({
-      apiToken: z.string(),
+      apiToken: z.string().optional(),
     }),
+    identifier: {
+      linkTemplateScript: 'linkTemplate.vrl',
+    }
+  },
+  states: {
+    credentials: {
+      type: 'integration',
+      schema: z.object({
+        accessToken: z.string(),
+      })
+    },
+  },
+  secrets: {
+    CLIENT_ID: {
+      optional: true,
+      description: 'Client ID in the App Management page of your Todoist app',
+    },
+    CLIENT_SECRET: {
+      optional: true,
+      description: 'Client Secret in the App Management page of your Todoist app',
+    }, 
+  },
+  identifier: {
+    extractScript: 'extract.vrl',
   },
 })

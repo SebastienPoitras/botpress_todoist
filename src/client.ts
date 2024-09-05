@@ -1,3 +1,4 @@
+import { RuntimeError } from '@botpress/sdk'
 import { TodoistApi } from '@doist/todoist-api-typescript'
 
 export type CreateTaskArgs = {
@@ -40,6 +41,23 @@ export class Priority {
 
 export class Client {
   constructor(private apiToken: string) {}
+
+  async getUserId(): Promise<string> {
+    const api = new TodoistApi(this.apiToken)
+    const project = await api.getProjects()
+    // Assume there will be only one inbox project and it'll have the user
+    // associated with the API token as its sole collaborator
+    const inbox = project.filter(project => project.isInboxProject)[0]
+    if (!inbox) {
+      throw new RuntimeError('Inbox project not found')
+    }
+
+    const user = (await api.getProjectCollaborators(inbox.id))[0]
+    if(!user) {
+      throw new RuntimeError('User owner of Inbox project not found')
+    }
+    return user.id
+  }
 
   async getTaskId(task_name: string): Promise<string | null> {
     const api = new TodoistApi(this.apiToken)

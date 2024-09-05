@@ -1,6 +1,7 @@
 import * as bp from '.botpress'
 import { NoteEvent, ItemAddedEvent, ItemCompletedEvent, ItemUpdatedEvent, eventSchema } from './types'
 import { Priority } from './client'
+import { handleOAuth } from './auth'
 
 const RESPONSE_OK = {
   status: 200,
@@ -13,7 +14,7 @@ async function handleNoteEvent(event: NoteEvent, { client }: bp.HandlerProps) {
   const commentId = event.event_data.id
   const { conversation } = await client.getOrCreateConversation({
     channel: 'comments',
-    tags: { id: conversationId },
+    tags: { id: conversationId }, 
   })
 
   const { user } = await client.getOrCreateUser({
@@ -33,7 +34,7 @@ async function handleNoteEvent(event: NoteEvent, { client }: bp.HandlerProps) {
   return RESPONSE_OK
 }
 
-async function onItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProps) {
+async function handleItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProps) {
   await client.createEvent({
     type: 'taskAdded',
     payload: {
@@ -48,7 +49,7 @@ async function onItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProps) {
   return RESPONSE_OK
 }
 
-async function onItemUpdated(event: ItemUpdatedEvent, { client }: bp.HandlerProps) {
+async function handleItemUpdated(event: ItemUpdatedEvent, { client }: bp.HandlerProps) {
   const newPriority = event.event_data.priority
   const oldPriority = event.event_data_extra.old_item.priority
 
@@ -66,7 +67,7 @@ async function onItemUpdated(event: ItemUpdatedEvent, { client }: bp.HandlerProp
   return RESPONSE_OK
 }
 
-async function onItemCompleted(event: ItemCompletedEvent, { client }: bp.HandlerProps) {
+async function handleItemCompleted(event: ItemCompletedEvent, { client }: bp.HandlerProps) {
   await client.createEvent({
     type: 'taskCompleted',
     payload: {
@@ -82,7 +83,19 @@ async function onItemCompleted(event: ItemCompletedEvent, { client }: bp.Handler
 }
 
 export const handler: bp.IntegrationProps['handler'] = async (props: bp.HandlerProps) => {
-  let { req, logger } = props
+  let { req, logger, ctx, client } = props
+  if (req.path.startsWith('/oauth')) {
+    let response = RESPONSE_OK
+    await handleOAuth(req, client, ctx).catch((err) => {
+      logger.forBot().error('Error handling OAuth request: ', err.message)
+      response = {
+        status: 400,
+        body: 'Invalid OAuth request',
+      }
+    })
+    return response
+  }
+
   if (!req.body) {
     logger.forBot().warn('Handler received empty request from Todoist')
     return {
@@ -105,7 +118,9 @@ export const handler: bp.IntegrationProps['handler'] = async (props: bp.HandlerP
 
   const parseResult = eventSchema.safeParse(eventData)
   if (!parseResult.success) {
-    logger.forBot().warn('Handler received request from Todoist with unsuported payload: ', eventData, 'Error: ', parseResult.error)
+    logger
+      .forBot()
+      .warn('Handler received request from Todoist with unsuported payload: ', eventData, 'Error: ', parseResult.error)
     return {
       status: 400,
       body: 'Invalid event',
@@ -121,15 +136,15 @@ export const handler: bp.IntegrationProps['handler'] = async (props: bp.HandlerP
   }
 
   if (event.event_name === 'item:added') {
-    return onItemAdded(event, props)
+    return handleItemAdded(event, props)
   }
 
   if (event.event_name === 'item:updated') {
-    return onItemUpdated(event, props)
+    return handleItemUpdated(event, props)
   }
 
   if (event.event_name === 'item:completed') {
-    return onItemCompleted(event, props)
+    return handleItemCompleted(event, props)
   }
 
   return {
