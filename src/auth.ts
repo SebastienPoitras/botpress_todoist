@@ -14,8 +14,8 @@ export async function handleOAuth(req: Request, client: bp.Client, ctx: Integrat
   }
 
   const response = await axios.post('https://todoist.com/oauth/access_token', {
-    client_id: ctx.configuration.clientId,
-    client_secret: ctx.configuration.clientSecret,
+    client_id: bp.secrets.CLIENT_ID,
+    client_secret: bp.secrets.CLIENT_SECRET,
     code,
   })
 
@@ -33,9 +33,9 @@ export async function handleOAuth(req: Request, client: bp.Client, ctx: Integrat
     },
   })
 
-  const userId = await new Client(access_token).getUserId();
+  const userId = await new Client(access_token).getUserId()
   client.configureIntegration({
-    identifier: userId
+    identifier: userId,
   })
 }
 
@@ -43,7 +43,7 @@ export async function handleOAuth(req: Request, client: bp.Client, ctx: Integrat
  * @returns Manually set API token if defined, else OAuth token. Undefined if not found or empty.
  */
 export async function getAccessToken(client: bp.Client, ctx: IntegrationContext): Promise<string | undefined> {
-  if(ctx.configuration.apiToken) {
+  if (ctx.configuration.apiToken) {
     return ctx.configuration.apiToken
   }
   return getOAuthAccessToken(client, ctx)
