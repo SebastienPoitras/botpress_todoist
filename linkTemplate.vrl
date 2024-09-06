@@ -1,3 +1,2 @@
-webhookId = to_string!(.webhookId) # TODO: Where does this come from?
-#clientId = to_string!(.clientId) # TODO: Can we add additional properties to the event prior to VRL script execution?
+webhookId = to_string!(.webhookId)
 "https://todoist.com/oauth/authorize?client_id=1256a409d4264480a42c3b3d436b0e7d&state={{ webhookId }}&scope=data:read_write,data:delete"
