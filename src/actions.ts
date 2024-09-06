@@ -3,7 +3,6 @@ import { RuntimeError } from '@botpress/sdk'
 import { Client, Priority } from './client'
 import { getAccessToken, NO_ACCESS_TOKEN_ERROR } from './auth'
 import { emptyStrToUndefined } from './utils'
-import { getStateConfiguration } from './config'
 
 const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input, ctx, client }) => {
   const accessToken = await getAccessToken(client, ctx)
@@ -11,46 +10,22 @@ const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input,
     throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
   }
 
-  console.log('taskCreate input:', JSON.stringify(input))
-
-  const { content, description, priority, parentTaskId } = input.item
+  const { content, description, priority, projectId, parentTaskId } = input.item
+  console.log('taskCreate', JSON.stringify(input))
   const todoistClient = new Client(accessToken)
   const task = await todoistClient.createTask({
     content,
     description,
     priority: new Priority(priority),
+    project_id: emptyStrToUndefined(projectId),
     parentTaskId: emptyStrToUndefined(parentTaskId),
   })
-
+ 
   return {
     item: {
-      id: task.id,
-      content: task.content,
-      description: task.description,
-      priority: task.priority.toDisplay(),
-      parentTaskId: task.parentTaskId,
+      ...task, 
     },
-  }
-}
-
-// TODO: Remove when taskCreate is complete
-const createTask: bp.IntegrationProps['actions']['createTask'] = async ({ input, ctx, client }) => {
-  const { content, description, priority, parentTaskId } = input
-  const accessToken = await getAccessToken(client, ctx)
-  if (!accessToken) {
-    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
-  }
-
-  const todoistClient = new Client(accessToken)
-
-  const { id: taskId } = await todoistClient.createTask({
-    content,
-    description,
-    priority: new Priority(priority),
-    parentTaskId: emptyStrToUndefined(parentTaskId),
-  })
-
-  return { taskId }
+  } 
 }
 
 const changeTaskPriority: bp.IntegrationProps['actions']['changeTaskPriority'] = async ({ input, ctx, client }) => {
@@ -79,9 +54,22 @@ const getTaskId: bp.IntegrationProps['actions']['getTaskId'] = async ({ input, c
   return { taskId }
 }
 
+const getProjectId: bp.IntegrationProps['actions']['getProjectId'] = async ({ input, ctx, client }) => {
+  const { name } = input
+
+  const accessToken = await getAccessToken(client, ctx)
+  if (!accessToken) {
+    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
+  }
+
+  const todoistClient = new Client(accessToken)
+  const projectId = await todoistClient.getProjectId(name)
+  return { projectId }
+}
+
 export default {
   taskCreate,
-  createTask,
   changeTaskPriority,
   getTaskId,
+  getProjectId,
 } satisfies bp.IntegrationProps['actions']

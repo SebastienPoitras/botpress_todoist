@@ -46,7 +46,6 @@ async function handleItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProp
     type: 'taskAdded',
     payload: {
       id: event.event_data.id,
-      user_id: event.event_data.user_id,
       content: event.event_data.content,
       description: event.event_data.description,
       priority: event.event_data.priority,

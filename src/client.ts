@@ -1,21 +1,16 @@
 import { RuntimeError } from '@botpress/sdk'
 import { TodoistApi } from '@doist/todoist-api-typescript'
+import * as bp from '.botpress'
 
 export type CreateTaskArgs = {
   content: string
   description: string
   priority: Priority
+  project_id?: string
   parentTaskId?: string
 }
 
-// TODO: Remove intermediate types and use inferred type from entity schema?
-export type Task = {
-  id: string
-  content: string
-  description: string
-  priority: Priority
-  parentTaskId?: string
-}
+export type Task = bp.entities.task.Task
 
 export type Comment = {
   id: string
@@ -75,6 +70,13 @@ export class Client {
     return task ? task.id : null
   }
 
+  async getProjectId(project_name: string): Promise<string | null> {
+    const api = new TodoistApi(this.apiToken)
+    const projects = await api.getProjects()
+    const project = projects.find((project) => project.name === project_name)
+    return project ? project.id : null
+  }
+
   async getTaskName(task_id: string): Promise<string> {
     const api = new TodoistApi(this.apiToken)
     const task = await api.getTask(task_id)
@@ -87,13 +89,15 @@ export class Client {
       content: args.content,
       description: args.description,
       priority: args.priority.toApi(),
+      projectId: args.project_id,
       parentId: args.parentTaskId,
     })
     return { 
       id: task.id,
       content: task.content,
       description: task.description,
-      priority: Priority.fromApi(task.priority),
+      priority: Priority.fromApi(task.priority).toDisplay(),
+      projectId: task.projectId,
       parentTaskId: task.parentId ? task.parentId : undefined,
     }
   }

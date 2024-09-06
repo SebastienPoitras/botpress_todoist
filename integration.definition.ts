@@ -46,23 +46,6 @@ export default new IntegrationDefinition({
     },
   },
   actions: {
-    createTask: {
-      title: 'Create Task',
-      description: 'Create a task',
-      input: {
-        schema: z.object({
-          content: z.string(),
-          description: z.string(),
-          priority: z.number(),
-          parentTaskId: z.string().optional(),
-        }),
-      },
-      output: {
-        schema: z.object({
-          taskId: z.string(),
-        }),
-      },
-    },
     changeTaskPriority: {
       title: 'Change Task Priority',
       description: 'Change the priority of a task',
@@ -90,6 +73,20 @@ export default new IntegrationDefinition({
         }),
       },
     },
+    getProjectId: {
+      title: 'Get Project ID',
+      description: 'Get the ID of the project',
+      input: {
+        schema: z.object({
+          name: z.string(),
+        }),
+      },
+      output: {
+        schema: z.object({
+          projectId: z.string().nullable(),
+        }),
+      },
+    },
   },
   events: {
     taskAdded: {
@@ -97,7 +94,6 @@ export default new IntegrationDefinition({
       description: 'A task has been added',
       schema: z.object({
         id: z.string(),
-        user_id: z.string(), // TODO: Should have assigner and/or assignee instead
         content: z.string(),
         description: z.string(),
         priority: z.number(),
@@ -160,6 +156,7 @@ export default new IntegrationDefinition({
         content: z.string(),
         description: z.string(),
         priority: z.number(),
+        projectId: z.string(),
         parentTaskId: z.string().optional(),
       }),
     },
