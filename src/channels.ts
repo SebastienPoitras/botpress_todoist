@@ -19,7 +19,7 @@ const comments: IntegrationProps['channels']['comments'] = {
       logger.forBot().info(`Creating comment on task "${taskId}" with content: "${content}"`)
       const comment = await todoistClient.createComment(taskId, content)
       await ack({ tags: { id: comment.id } })
-    },
+    }, 
   },
 }
 

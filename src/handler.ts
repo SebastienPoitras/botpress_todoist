@@ -14,7 +14,7 @@ async function handleNoteEvent(event: NoteEvent, { client }: bp.HandlerProps) {
   const commentId = event.event_data.id
   const { conversation } = await client.getOrCreateConversation({
     channel: 'comments',
-    tags: { id: conversationId }, 
+    tags: { id: conversationId },
   })
 
   const { user } = await client.getOrCreateUser({

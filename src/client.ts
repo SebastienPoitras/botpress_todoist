@@ -8,6 +8,15 @@ export type CreateTaskArgs = {
   parentTaskId?: string
 }
 
+// TODO: Remove intermediate types and use inferred type from entity schema?
+export type Task = {
+  id: string
+  content: string
+  description: string
+  priority: Priority
+  parentTaskId?: string
+}
+
 export type Comment = {
   id: string
   task_id: string
@@ -72,7 +81,7 @@ export class Client {
     return task.content
   }
 
-  async createTask(args: CreateTaskArgs): Promise<{ id: string }> {
+  async createTask(args: CreateTaskArgs): Promise<Task> {
     const api = new TodoistApi(this.apiToken)
     const task = await api.addTask({
       content: args.content,
@@ -80,7 +89,13 @@ export class Client {
       priority: args.priority.toApi(),
       parentId: args.parentTaskId,
     })
-    return { id: task.id }
+    return { 
+      id: task.id,
+      content: task.content,
+      description: task.description,
+      priority: Priority.fromApi(task.priority),
+      parentTaskId: task.parentId ? task.parentId : undefined,
+    }
   }
 
   async changeTaskPriority(task_id: string, priority: Priority): Promise<void> {

@@ -1,72 +1,101 @@
-import { IntegrationProps } from ".botpress"
-import { RuntimeError } from "@botpress/sdk"
-import { Client, Priority } from "./client"
-import { getAccessToken, NO_ACCESS_TOKEN_ERROR } from "./auth"
+import * as bp from '.botpress'
+import { RuntimeError } from '@botpress/sdk'
+import { Client, Priority } from './client'
+import { getAccessToken, NO_ACCESS_TOKEN_ERROR } from './auth'
+import { emptyStrToUndefined } from './utils'
 
-const createComment: IntegrationProps['actions']['createComment'] = async ({ input, ctx, client }) => {
-    const { taskId, content } = input
-    const accessToken = await getAccessToken(client, ctx)
-    if (!accessToken) {
-      throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
-    }
-
-    const todoistClient = new Client(accessToken)
-    const { id: commentId } = await todoistClient.createComment(taskId, content)
-    return { commentId }
+const createComment: bp.IntegrationProps['actions']['createComment'] = async ({ input, ctx, client }) => {
+  const { taskId, content } = input
+  const accessToken = await getAccessToken(client, ctx)
+  if (!accessToken) {
+    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
   }
 
-  const createTask: IntegrationProps['actions']['createTask'] = async ({ input, ctx, client }) => {
-    const { content, description, priority } = input
+  const todoistClient = new Client(accessToken)
+  const { id: commentId } = await todoistClient.createComment(taskId, content)
+  return { commentId }
+}
 
-    let { parentTaskId } = input
-    parentTaskId = parentTaskId === '' ? undefined : parentTaskId // studio sends an empty string if the field is empty
-
-    const accessToken = await getAccessToken(client, ctx)
-    if (!accessToken) {
-      throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
-    }
-
-    const todoistClient = new Client(accessToken)
-
-    const { id: taskId } = await todoistClient.createTask({
-      content,
-      description,
-      priority: new Priority(priority),
-      parentTaskId,
-    })
-
-    return { taskId }
+const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input, ctx, client }) => {
+  const accessToken = await getAccessToken(client, ctx)
+  if (!accessToken) {
+    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
   }
 
-  const changeTaskPriority: IntegrationProps['actions']['changeTaskPriority'] = async ({ input, ctx, client }) => {
-    const { taskId, priority } = input
-
-    const accessToken = await getAccessToken(client, ctx)
-    if (!accessToken) {
-      throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
+  console.log('taskCreate input:', JSON.stringify(input))
+  
+  // TODO: I don't know the id yet. Will it be empty until I create the task?
+  // TODO: Dummy value should be entered for ID in the studio?
+  const { content, description, priority, parentTaskId } = input.item
+  const todoistClient = new Client(accessToken)
+  const task = await todoistClient.createTask({
+    content,
+    description,
+    priority: new Priority(priority),
+    parentTaskId: emptyStrToUndefined(parentTaskId),
+  })
+  
+  return {
+    item: {
+      id: task.id,
+      content: task.content,
+      description: task.description,
+      priority: task.priority.toDisplay(),
+      parentTaskId: task.parentTaskId,
     }
+  }
+}
 
-    const todoistClient = new Client(accessToken)
-    await todoistClient.changeTaskPriority(taskId, new Priority(priority))
-    return {}
+// TODO: Remove when taskCreate is complete
+const createTask: bp.IntegrationProps['actions']['createTask'] = async ({ input, ctx, client }) => {
+  const { content, description, priority, parentTaskId } = input
+  const accessToken = await getAccessToken(client, ctx)
+  if (!accessToken) {
+    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
   }
 
-  const getTaskId: IntegrationProps['actions']['getTaskId'] = async ({ input, ctx, client }) => {
-    const { name } = input
+  const todoistClient = new Client(accessToken)
 
-    const accessToken = await getAccessToken(client, ctx)
-    if (!accessToken) {
-      throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
-    }
+  const { id: taskId } = await todoistClient.createTask({
+    content,
+    description,
+    priority: new Priority(priority),
+    parentTaskId: emptyStrToUndefined(parentTaskId),
+  })
 
-    const todoistClient = new Client(accessToken)
-    const taskId = await todoistClient.getTaskId(name)
-    return { taskId }
+  return { taskId }
+}
+
+const changeTaskPriority: bp.IntegrationProps['actions']['changeTaskPriority'] = async ({ input, ctx, client }) => {
+  const { taskId, priority } = input
+
+  const accessToken = await getAccessToken(client, ctx)
+  if (!accessToken) {
+    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
   }
 
-  export default {
-    createComment,
-    createTask,
-    changeTaskPriority,
-    getTaskId
-  } satisfies IntegrationProps['actions']
+  const todoistClient = new Client(accessToken)
+  await todoistClient.changeTaskPriority(taskId, new Priority(priority))
+  return {}
+}
+
+const getTaskId: bp.IntegrationProps['actions']['getTaskId'] = async ({ input, ctx, client }) => {
+  const { name } = input
+
+  const accessToken = await getAccessToken(client, ctx)
+  if (!accessToken) {
+    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
+  }
+
+  const todoistClient = new Client(accessToken)
+  const taskId = await todoistClient.getTaskId(name)
+  return { taskId }
+}
+
+export default {
+  createComment,
+  taskCreate,
+  createTask,
+  changeTaskPriority,
+  getTaskId,
+} satisfies bp.IntegrationProps['actions']

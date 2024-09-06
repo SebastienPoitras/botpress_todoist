@@ -1,4 +1,4 @@
-import { z, IntegrationDefinition, messages } from '@botpress/sdk'
+import { z, IntegrationDefinition, messages, interfaces } from '@botpress/sdk'
 
 const ItemDefinition = z.object({
   id: z.string(),
@@ -111,7 +111,7 @@ export default new IntegrationDefinition({
       description: 'A task has been added',
       schema: z.object({
         id: z.string(),
-        user_id: z.string(),
+        user_id: z.string(), // TODO: Should have assigner and/or assignee instead
         content: z.string(),
         description: z.string(),
         priority: z.number(),
@@ -161,4 +161,15 @@ export default new IntegrationDefinition({
   identifier: {
     extractScript: 'extract.vrl',
   },
-})
+  entities: {
+    task: {
+      schema: z.object({
+        id: z.string(),
+        content: z.string(),
+        description: z.string(),
+        priority: z.number(),
+        parentTaskId: z.string().optional(),
+      }),
+    }
+  }
+}).extend(interfaces.creatable, ({task}) => ({item: task}))
