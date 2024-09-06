@@ -58,7 +58,7 @@ async function handleItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProp
 
 async function handleItemUpdated(event: ItemUpdatedEvent, { client }: bp.HandlerProps) {
   const newPriority = event.event_data.priority
-  const oldPriority = event.event_data_extra.old_item.priority
+  const oldPriority = event.event_data_extra?.old_item.priority
 
   const { conversation } = await client.getOrCreateConversation({
     channel: 'comments',
@@ -71,7 +71,7 @@ async function handleItemUpdated(event: ItemUpdatedEvent, { client }: bp.Handler
       payload: {
         id: event.event_data.id,
         newPriority: Priority.fromApi(newPriority).toDisplay(),
-        oldPriority: Priority.fromApi(oldPriority).toDisplay(),
+        oldPriority: oldPriority ? Priority.fromApi(oldPriority).toDisplay() : undefined,
       },
       conversationId: conversation.id,
     })

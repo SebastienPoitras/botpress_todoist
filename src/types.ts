@@ -52,7 +52,7 @@ export const itemUpdatedEventSchema = z.object({
   event_name: z.literal('item:updated'),
   user_id: z.string(),
   event_data: itemEventDataSchema,
-  event_data_extra: itemUpdateEventDataExtraSchema,
+  event_data_extra: itemUpdateEventDataExtraSchema.optional(), // Only present if updated by bot itself
 })
 
 export type Event = z.infer<typeof eventSchema>

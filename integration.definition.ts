@@ -105,7 +105,7 @@ export default new IntegrationDefinition({
       schema: z.object({
         id: z.string(),
         newPriority: z.number(),
-        oldPriority: z.number(),
+        oldPriority: z.number().optional(),
       }),
     },
     taskCompleted: {
