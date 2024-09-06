@@ -1,3 +1,4 @@
+import { configuration } from '.botpress'
 import { z, IntegrationDefinition, messages, interfaces } from '@botpress/sdk'
 
 const ItemDefinition = z.object({
@@ -45,21 +46,6 @@ export default new IntegrationDefinition({
     },
   },
   actions: {
-    createComment: {
-      title: 'Create Comment',
-      description: 'Create a comment',
-      input: {
-        schema: z.object({
-          taskId: z.string(),
-          content: z.string(),
-        }),
-      },
-      output: {
-        schema: z.object({
-          commentId: z.string(),
-        }),
-      },
-    },
     createTask: {
       title: 'Create Task',
       description: 'Create a task',
@@ -138,14 +124,20 @@ export default new IntegrationDefinition({
     }),
     identifier: {
       linkTemplateScript: 'linkTemplate.vrl',
-    }
+    },
   },
   states: {
     credentials: {
       type: 'integration',
       schema: z.object({
         accessToken: z.string(),
-      })
+      }),
+    },
+    configuration: {
+      type: 'integration',
+      schema: z.object({
+        botUserId: z.string().optional(),
+      }),
     },
   },
   secrets: {
@@ -156,7 +148,7 @@ export default new IntegrationDefinition({
     CLIENT_SECRET: {
       optional: true,
       description: 'Client Secret in the App Management page of your Todoist app',
-    }, 
+    },
   },
   identifier: {
     extractScript: 'extract.vrl',
@@ -170,6 +162,6 @@ export default new IntegrationDefinition({
         priority: z.number(),
         parentTaskId: z.string().optional(),
       }),
-    }
-  }
-}).extend(interfaces.creatable, ({task}) => ({item: task}))
+    },
+  },
+}).extend(interfaces.creatable, ({ task }) => ({ item: task }))

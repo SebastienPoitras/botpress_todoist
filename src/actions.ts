@@ -3,18 +3,7 @@ import { RuntimeError } from '@botpress/sdk'
 import { Client, Priority } from './client'
 import { getAccessToken, NO_ACCESS_TOKEN_ERROR } from './auth'
 import { emptyStrToUndefined } from './utils'
-
-const createComment: bp.IntegrationProps['actions']['createComment'] = async ({ input, ctx, client }) => {
-  const { taskId, content } = input
-  const accessToken = await getAccessToken(client, ctx)
-  if (!accessToken) {
-    throw new RuntimeError(NO_ACCESS_TOKEN_ERROR)
-  }
-
-  const todoistClient = new Client(accessToken)
-  const { id: commentId } = await todoistClient.createComment(taskId, content)
-  return { commentId }
-}
+import { getStateConfiguration } from './config'
 
 const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input, ctx, client }) => {
   const accessToken = await getAccessToken(client, ctx)
@@ -23,9 +12,7 @@ const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input,
   }
 
   console.log('taskCreate input:', JSON.stringify(input))
-  
-  // TODO: I don't know the id yet. Will it be empty until I create the task?
-  // TODO: Dummy value should be entered for ID in the studio?
+
   const { content, description, priority, parentTaskId } = input.item
   const todoistClient = new Client(accessToken)
   const task = await todoistClient.createTask({
@@ -34,7 +21,7 @@ const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input,
     priority: new Priority(priority),
     parentTaskId: emptyStrToUndefined(parentTaskId),
   })
-  
+
   return {
     item: {
       id: task.id,
@@ -42,7 +29,7 @@ const taskCreate: bp.IntegrationProps['actions']['taskCreate'] = async ({ input,
       description: task.description,
       priority: task.priority.toDisplay(),
       parentTaskId: task.parentTaskId,
-    }
+    },
   }
 }
 
@@ -93,7 +80,6 @@ const getTaskId: bp.IntegrationProps['actions']['getTaskId'] = async ({ input, c
 }
 
 export default {
-  createComment,
   taskCreate,
   createTask,
   changeTaskPriority,

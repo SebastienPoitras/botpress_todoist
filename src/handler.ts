@@ -22,11 +22,13 @@ async function handleNoteEvent(event: NoteEvent, { client }: bp.HandlerProps) {
   })
 
   await client.getOrCreateMessage({
-    tags: { id: commentId },
+    tags: { 
+      id: commentId,
+    },
     type: 'text',
     userId: user.id,
     conversationId: conversation.id,
-    payload: {
+    payload: { 
       text: event.event_data.content,
     },
   })
@@ -35,6 +37,11 @@ async function handleNoteEvent(event: NoteEvent, { client }: bp.HandlerProps) {
 }
 
 async function handleItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProps) {
+  const { conversation } = await client.getOrCreateConversation({
+    channel: 'comments',
+    tags: { id: event.event_data.id },
+  })
+  
   await client.createEvent({
     type: 'taskAdded',
     payload: {
@@ -44,6 +51,7 @@ async function handleItemAdded(event: ItemAddedEvent, { client }: bp.HandlerProp
       description: event.event_data.description,
       priority: event.event_data.priority,
     },
+    conversationId: conversation.id, 
   })
 
   return RESPONSE_OK
@@ -53,6 +61,11 @@ async function handleItemUpdated(event: ItemUpdatedEvent, { client }: bp.Handler
   const newPriority = event.event_data.priority
   const oldPriority = event.event_data_extra.old_item.priority
 
+  const { conversation } = await client.getOrCreateConversation({
+    channel: 'comments',
+    tags: { id: event.event_data.id },
+  })
+
   if (newPriority !== oldPriority) {
     await client.createEvent({
       type: 'taskPriorityChanged',
@@ -61,6 +74,7 @@ async function handleItemUpdated(event: ItemUpdatedEvent, { client }: bp.Handler
         newPriority: Priority.fromApi(newPriority).toDisplay(),
         oldPriority: Priority.fromApi(oldPriority).toDisplay(),
       },
+      conversationId: conversation.id,
     })
   }
 
@@ -68,6 +82,11 @@ async function handleItemUpdated(event: ItemUpdatedEvent, { client }: bp.Handler
 }
 
 async function handleItemCompleted(event: ItemCompletedEvent, { client }: bp.HandlerProps) {
+  const { conversation } = await client.getOrCreateConversation({
+    channel: 'comments',
+    tags: { id: event.event_data.id },
+  })
+  
   await client.createEvent({
     type: 'taskCompleted',
     payload: {
@@ -77,6 +96,7 @@ async function handleItemCompleted(event: ItemCompletedEvent, { client }: bp.Han
       description: event.event_data.description,
       priority: event.event_data.priority,
     },
+    conversationId: conversation.id, 
   })
 
   return RESPONSE_OK

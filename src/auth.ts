@@ -37,6 +37,22 @@ export async function handleOAuth(req: Request, client: bp.Client, ctx: Integrat
   client.configureIntegration({
     identifier: userId,
   })
+
+  await client.updateUser({ 
+    id: ctx.botUserId,
+    tags: {
+      id: userId,
+    },
+  })
+
+  await client.setState({
+    type: 'integration',
+    name: 'configuration',
+    id: ctx.integrationId,
+    payload: {
+      botUserId: userId,
+    },
+  })
 }
 
 /**

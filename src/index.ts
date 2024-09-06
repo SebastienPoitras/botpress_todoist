@@ -1,15 +1,12 @@
 import * as bp from '.botpress'
-import { handler } from './handler'
+import { register, unregister } from './setup'
 import actions from './actions'
 import channels from './channels'
+import { handler } from './handler'
 
 export default new bp.Integration({
-  register: async ({ logger }) => {
-    logger.forBot().info('Registering Todoist integration')
-  },
-  unregister: async ({ logger }) => {
-    logger.forBot().info('Unregistering Todoist integration')
-  },
+  register,
+  unregister,
   actions,
   channels,
   handler,
